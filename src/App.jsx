@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { QRCodeSVG } from 'qrcode.react';
-import QRCode from 'qrcode'; // Add this import
+import QRCode from 'qrcode';
 
 export default function FixedExcelQRExporter() {
   const [urls, setUrls] = useState([]);
@@ -200,70 +200,6 @@ export default function FixedExcelQRExporter() {
     }
   };
 
-  // Create a comprehensive Excel report with embedded images (conceptual)
-  const createExcelWithEmbeddedImages = async () => {
-    if (urls.length === 0) {
-      alert('Please load an Excel file first');
-      return;
-    }
-
-    setIsProcessing(true);
-
-    try {
-      // Create Excel data with image placeholders
-      const reportData = [];
-
-      for (let i = 0; i < originalData.length; i++) {
-        const row = originalData[i];
-        const url = urls[i];
-
-        // Create row with image reference
-        reportData.push({
-          'Record_ID': i + 1,
-          'QR_Code_File': `qr_code_${i + 1}.png`,
-          ...row,
-          'Generated_URL': url,
-          'URL_Length': url.length,
-          'Created_Date': new Date().toLocaleDateString()
-        });
-      }
-
-      // Create worksheet
-      const worksheet = XLSX.utils.json_to_sheet(reportData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "QR Code Report");
-
-      // Add instructions sheet
-      const instructions = [
-        { Instruction: "QR Code Images are referenced in the QR_Code_File column" },
-        { Instruction: "Download QR images separately using the 'Export QR Images' button" },
-        { Instruction: "Each QR code encodes the corresponding Generated_URL" },
-        { Instruction: "Use the Record_ID to match QR codes with data rows" }
-      ];
-
-      const instructionsSheet = XLSX.utils.json_to_sheet(instructions);
-      XLSX.utils.book_append_sheet(workbook, instructionsSheet, "Instructions");
-
-      // Export
-      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-      const blob = new Blob([excelBuffer], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      });
-
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `${fileName}_qr_report.xlsx`;
-      link.click();
-
-      alert('Excel report created! Download QR images separately for complete package.');
-
-    } catch (error) {
-      console.error('Export failed:', error);
-      alert('Export failed. Please try again.');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
 
   // Fixed PDF export with working QR codes
   const exportToPDFWithQR = async () => {
@@ -458,7 +394,6 @@ ${await Promise.all(originalData.map(async (row, index) => {
         <p>Report generated on ${new Date().toLocaleString()}</p>
         <p>Total QR Codes: ${originalData.length} | Source: ${fileName}</p>
     </div>
-
 </body>
 </html>`;
 
@@ -480,194 +415,133 @@ ${await Promise.all(originalData.map(async (row, index) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">
-            Excel QR Code Generator with Fixed PDF Export
-          </h1>
+    <div className='flex flex-col items-center mt-10'>
+      <h1>
+        XLSX-QR-CODE-GENERATOR
+      </h1>
 
-          {/* File Input */}
-          <div className="mb-8">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-              <input
-                type="file"
-                onChange={handleFileChange}
-                accept=".xlsx,.xls"
-                className="hidden"
-                id="file-upload"
-              />
-              <label
-                htmlFor="file-upload"
-                className="cursor-pointer text-blue-600 hover:text-blue-800 font-medium"
-              >
-                Click to upload Excel file (.xlsx, .xls)
-              </label>
-              {fileName && (
-                <p className="mt-2 text-gray-600">Loaded: {fileName}</p>
-              )}
-            </div>
-          </div>
+      {/* File Input */}
+      <div className="flex flex-col items-center">
+        <div className="mt-10">
+          <input
+            type="file"
+            onChange={handleFileChange}
+            accept=".xlsx,.xls"
+            className='hidden'
+            id="file-upload"
+          />
+          <label
+            htmlFor="file-upload"
+            className='border p-4 rounded-xl hover:cursor-pointer'
+          >
+            Click to upload Excel file (.xlsx, .xls)
+          </label>
+        </div>
+        {fileName && (
+          <p className="mt-10"><b>Loaded</b>: {fileName}</p>
+        )}
+      </div>
 
-          {/* Export Buttons */}
-          {urls.length > 0 && (
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold mb-4 text-center">Export Options</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
-                <button
-                  onClick={exportToExcelWithQRImages}
-                  disabled={isProcessing}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
-                >
-                  {isProcessing ? 'Processing...' : 'Excel + QR Data'}
-                </button>
+      {/* Export Buttons */}
+      {urls.length > 0 && (
+        <div className="">
 
-                <button
-                  onClick={exportQRImagesAsFiles}
-                  disabled={isProcessing}
-                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
-                >
-                  Export QR Images
-                </button>
+          <div className="flex flex-col lg:flex-row [&>button]:m-4 mt-5">
 
-                <button
-                  onClick={createExcelWithEmbeddedImages}
-                  disabled={isProcessing}
-                  className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
-                >
-                  Excel Report
-                </button>
+            <button
+              onClick={exportToExcelWithQRImages}
+              disabled={isProcessing}
+            >
+              {isProcessing ? 'Processing...' : 'Excel + QR Data'}
+            </button>
 
-                <button
-                  onClick={exportToPDFWithQR}
-                  disabled={isProcessing}
-                  className="bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
-                >
-                  📄 PDF Report (Fixed)
-                </button>
+            <button
+              onClick={exportQRImagesAsFiles}
+              disabled={isProcessing}
+            >
+              Export QR Images
+            </button>
 
-                <button
-                  onClick={() => {
-                    const textContent = urls.map((url, index) => `${index + 1}. ${url}`).join('\n');
-                    const blob = new Blob([textContent], { type: 'text/plain' });
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = `${fileName}_urls.txt`;
-                    link.click();
-                  }}
-                  className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-4 rounded-lg transition-colors text-sm"
-                >
-                  Export URLs
-                </button>
-              </div>
-            </div>
-          )}
+            <button
+              onClick={exportToPDFWithQR}
+              disabled={isProcessing}
+            >
+              Export PDF
+            </button>
 
-          {/* Status */}
-          {urls.length > 0 && (
-            <div className="mb-6 p-4 bg-green-50 rounded-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-green-800 font-medium">
-                  ✅ Generated {urls.length} QR codes from {originalData.length} records
-                </span>
-                <span className="text-green-600 text-sm">
-                  {qrImages.length} images ready
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* QR Code Preview */}
-          {urls.length > 0 && (
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-                QR Code Preview
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
-                {urls.slice(0, 12).map((url, index) => (
-                  <div key={index} className="bg-gray-50 p-4 rounded-lg border hover:shadow-md transition-shadow">
-                    <div className="flex justify-center mb-3">
-                      <QRCodeSVG
-                        value={url}
-                        size={100}
-                        className="border border-gray-300"
-                        bgColor="#ffffff"
-                        fgColor="#000000"
-                      />
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xs font-medium text-gray-800 mb-1">
-                        QR #{index + 1}
-                      </div>
-                      <div className="text-xs text-gray-600">
-                        {Object.entries(originalData[index] || {})
-                          .slice(0, 1)
-                          .map(([key, value]) => `${value}`)
-                          .join('')}
-                      </div>
-                      <button
-                        onClick={() => {
-                          if (qrImages[index]) {
-                            const link = document.createElement('a');
-                            link.href = URL.createObjectURL(qrImages[index]);
-                            link.download = `qr_code_${index + 1}.png`;
-                            link.click();
-                          }
-                        }}
-                        className="mt-2 text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
-                      >
-                        Download
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {urls.length > 12 && (
-                <div className="text-center text-gray-600 mb-6">
-                  <p>Showing 12 of {urls.length} QR codes</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Instructions */}
-          <div className="mt-8 bg-blue-50 rounded-lg p-6">
-            <h3 className="font-semibold text-blue-800 mb-3">🔧 What's Fixed:</h3>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-medium text-blue-700 mb-2">PDF Export Issues Fixed:</h4>
-                <ul className="text-blue-600 text-sm space-y-1">
-                  <li>✅ QR codes now properly display in PDF</li>
-                  <li>✅ Uses actual qrcode library for generation</li>
-                  <li>✅ Better print layout and styling</li>
-                  <li>✅ Print button for easy PDF creation</li>
-                  <li>✅ Proper page breaks and formatting</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-medium text-blue-700 mb-2">How to Use PDF:</h4>
-                <ul className="text-blue-600 text-sm space-y-1">
-                  <li>1. Click "📄 PDF Report (Fixed)"</li>
-                  <li>2. Open the downloaded HTML file</li>
-                  <li>3. Click the "Print to PDF" button</li>
-                  <li>4. Select "Save as PDF" in print dialog</li>
-                  <li>5. Your PDF will have working QR codes!</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* Pro Tip */}
-          <div className="mt-6 bg-yellow-50 rounded-lg p-4">
-            <p className="text-yellow-800 text-sm">
-              💡 <strong>Fixed!</strong> The PDF export now uses the proper qrcode library to generate actual, scannable QR codes.
-              The QR codes will be clearly visible and scannable in the final PDF document.
-            </p>
+            <button
+              onClick={() => {
+                const textContent = urls.map((url, index) => `${index + 1}. ${url}`).join('\n');
+                const blob = new Blob([textContent], { type: 'text/plain' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `${fileName}_urls.txt`;
+                link.click();
+              }}
+              className=""
+            >
+              Export URLs
+            </button>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Status */}
+      {urls.length > 0 && (
+        <div className="mt-5">
+          <span className="">
+            Generated {urls.length} QR codes from {originalData.length} records ✅
+          </span>
+        </div>
+      )}
+
+      {/* QR Code Preview */}
+      {urls.length > 0 && (
+        <div>
+          <h2 className="">
+            QR Code Preview
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            {urls.map((url, index) => (
+              <div key={index} className="rounded-lg p-5">
+                <div className="flex justify-center mb-4">
+                  <QRCodeSVG
+                    value={url}
+                    size={200}
+                    bgColor="#ffffff"
+                    fgColor="#000000"
+                  />
+                </div>
+                <div className="text-center space-y-2">
+                  <div className="font-semibold text-lg">
+                    QR #{index + 1}
+                  </div>
+                  <div className="text-sm text-gray-600 truncate">
+                    {Object.entries(originalData[index] || {})
+                      .slice(0, 1)
+                      .map(([key, value]) => `${value}`)
+                      .join('')}
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (qrImages[index]) {
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(qrImages[index]);
+                        link.download = `qr_code_${index + 1}.png`;
+                        link.click();
+                      }
+                    }}
+                    className="w-full mt-3 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded transition-colors"
+                  >
+                    Download
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
