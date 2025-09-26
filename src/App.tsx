@@ -33,7 +33,7 @@ export default function App() {
       // const worksheet = workbook.Sheets[sheetName];
       // const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-      const baseUrl = "http://bar-code-backend.onrender.com/assets/";
+      const baseUrl = "https://qrid-viewer.onrender.com/";
       const generatedUrls = (rows as Record<string, any>[]).map(row => {
         const rowStr = Object.entries(row)
           .map(([key, value]) => `${key}=${value}`)
