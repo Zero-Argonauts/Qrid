@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import * as XLSX from 'xlsx';
 import { FileUpload } from './components/FileUpload';
 import { QRCodeGrid } from './components/QRCodeGrid';
@@ -6,6 +6,10 @@ import { ExportButtons } from './components/ExportButtons';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { Alert, AlertDescription } from './components/ui/alert';
 import { Info } from 'lucide-react';
+import { ManualQRInput } from './components/ManualQRInput';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './components/ui/table';
+import { SignedIn, SignedOut, SignIn } from '@clerk/clerk-react'
+
 
 interface QRCodeItem {
   id: string;
@@ -17,6 +21,21 @@ export default function App() {
   const [qrCodes, setQrCodes] = useState<QRCodeItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [fileName, setFileName] = useState<string>('');
+  const pathPairs = useMemo(() => {
+    const raw = window.location.pathname.slice(1);
+    if (!raw) return [] as { column: string; value: string }[];
+    const decoded = decodeURIComponent(raw).trim();
+    if (!decoded) return [] as { column: string; value: string }[];
+    return decoded
+      .split(';')
+      .map(s => s.trim())
+      .filter(Boolean)
+      .map(seg => {
+        const [column, ...rest] = seg.split('=');
+        return { column: column ?? '', value: rest.join('=') ?? '' };
+      })
+      .filter(p => p.column);
+  }, []);
 
   const processExcelFile = async (file: File) => {
     setIsProcessing(true);
@@ -28,32 +47,15 @@ export default function App() {
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(sheet);
 
-      // const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-      // const sheetName = workbook.SheetNames[0];
-      // const worksheet = workbook.Sheets[sheetName];
-      // const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-      const baseUrl = "https://qrid-viewer.onrender.com/";
+      const baseUrl = "https://qrid.vercel.app/";
       const generatedUrls = (rows as Record<string, any>[]).map(row => {
         const rowStr = Object.entries(row)
           .map(([key, value]) => `${key}=${value}`)
-          .join("; ") + ";";
+          .join("; ");
+        // .join("; ") + ";";
         return baseUrl + rowStr;
       });
-
-
-      // const newQrCodes: QRCodeItem[] = jsonData.map((row: any, index) => {
-      //   // Convert row data to QR code string
-      //   const qrData = Object.entries(row)
-      //     .map(([key, value]) => `${key}: ${value}`)
-      //     .join('\n');
-
-      //   return {
-      //     id: `qr-${index}`,
-      //     data: qrData,
-      //     rowData: row as Record<string, any>
-      //   };
-      // });
 
       const newQrCodes: QRCodeItem[] = generatedUrls.map((url, index) => ({
         id: `qr-${index + 1}`,
@@ -70,6 +72,69 @@ export default function App() {
       setIsProcessing(false);
     }
   };
+
+  const handleManualGenerate = (data: Record<string, string>) => {
+    // Build URL with base + semicolon-delimited key=value pairs
+    const baseUrl = "https://qrid.vercel.app/";
+    const rowStr = Object.entries(data)
+      .map(([key, value]) => `${key}=${value}`)
+      .join("; ");
+    const qrData = baseUrl + rowStr;
+
+    const newQrCode: QRCodeItem = {
+      id: `manual-qr-${Date.now()}`,
+      data: qrData,
+      rowData: data
+    };
+
+    setQrCodes([...qrCodes, newQrCode]);
+    setFileName('Manual Entry');
+  };
+
+  // If URL contains data after '/', render the viewer table
+  if (pathPairs.length > 0) {
+    return (
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-6xl mx-auto space-y-6">
+          <SignedIn>
+            <Card>
+              <CardHeader>
+                <CardTitle>Asset Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[40%]">Field</TableHead>
+                      <TableHead>Value</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pathPairs.map((p, i) => (
+                      <TableRow key={`${p.column}-${i}`}>
+                        <TableCell className="font-medium">{p.column}</TableCell>
+                        <TableCell>{p.value}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </SignedIn>
+          <SignedOut>
+            <Card>
+              <CardHeader className='flex justify-center'>
+                <CardTitle>Sign in to view details</CardTitle>
+              </CardHeader>
+              <CardContent className='flex justify-center'>
+                <SignIn appearance={{ elements: { formButtonPrimary: "w-full" } }} />
+              </CardContent>
+            </Card>
+          </SignedOut>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -112,7 +177,8 @@ export default function App() {
             )}
           </CardContent>
         </Card>
-
+        {/* Manual QR Input */}
+        <ManualQRInput onGenerate={handleManualGenerate} />
         {/* Info */}
         <Alert>
           <Info className="h-4 w-4" />
