@@ -9,6 +9,7 @@ import { Info } from 'lucide-react';
 import { ManualQRInput } from './components/ManualQRInput';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './components/ui/table';
 import { SignedIn, SignedOut, SignIn } from '@clerk/clerk-react'
+import { useLocation } from 'react-router-dom';
 
 
 interface QRCodeItem {
@@ -21,8 +22,9 @@ export default function App() {
   const [qrCodes, setQrCodes] = useState<QRCodeItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [fileName, setFileName] = useState<string>('');
+  const location = useLocation();
   const pathPairs = useMemo(() => {
-    const raw = window.location.pathname.slice(1);
+    const raw = location.pathname.slice(1);
     if (!raw) return [] as { column: string; value: string }[];
     const decoded = decodeURIComponent(raw).trim();
     if (!decoded) return [] as { column: string; value: string }[];
@@ -35,7 +37,7 @@ export default function App() {
         return { column: column ?? '', value: rest.join('=') ?? '' };
       })
       .filter(p => p.column);
-  }, []);
+  }, [location.pathname]);
 
   const processExcelFile = async (file: File) => {
     setIsProcessing(true);
