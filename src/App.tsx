@@ -9,7 +9,9 @@ import { Info } from 'lucide-react';
 import { ManualQRInput } from './components/ManualQRInput';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './components/ui/table';
 import { SignedIn, SignedOut, SignIn } from '@clerk/clerk-react'
-import { useLocation } from 'react-router-dom';
+import { useLocation, Routes, Route } from 'react-router-dom';
+import SignUpPage from './pages/SignUp';
+import SignInPage from './pages/SignIn';
 
 
 interface QRCodeItem {
@@ -28,6 +30,7 @@ export default function App() {
     if (!raw) return [] as { column: string; value: string }[];
     const decoded = decodeURIComponent(raw).trim();
     if (!decoded) return [] as { column: string; value: string }[];
+    if (!decoded.includes('=')) return [] as { column: string; value: string }[];
     return decoded
       .split(';')
       .map(s => s.trim())
@@ -89,125 +92,140 @@ export default function App() {
       rowData: data
     };
 
-    setQrCodes([...qrCodes, newQrCode]);
+    setQrCodes([newQrCode, ...qrCodes]);
     setFileName('Manual Entry');
   };
 
-  // If URL contains data after '/', render the viewer table
-  if (pathPairs.length > 0) {
-    return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-6xl mx-auto space-y-6">
-          <SignedIn>
-            <Card>
-              <CardHeader>
-                <CardTitle>Asset Details</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[40%]">Field</TableHead>
-                      <TableHead>Value</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {pathPairs.map((p, i) => (
-                      <TableRow key={`${p.column}-${i}`}>
-                        <TableCell className="font-medium">{p.column}</TableCell>
-                        <TableCell>{p.value}</TableCell>
+  const HomeView = () => {
+    // If URL contains data after '/', render the viewer table
+    if (pathPairs.length > 0) {
+      return (
+        <div className="min-h-screen bg-background p-6">
+          <div className="max-w-6xl mx-auto space-y-6">
+            <SignedIn>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Asset Details</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[40%]">Field</TableHead>
+                        <TableHead>Value</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </SignedIn>
-          <SignedOut>
-              <CardContent className='flex justify-center'>
-                <SignIn appearance={{ elements: { formButtonPrimary: "w-full" } }} />
-              </CardContent>
+                    </TableHeader>
+                    <TableBody>
+                      {pathPairs.map((p, i) => (
+                        <TableRow key={`${p.column}-${i}`}>
+                          <TableCell className="font-medium">{p.column}</TableCell>
+                          <TableCell>{p.value}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </SignedIn>
+            <SignedOut>
+              <CardContent style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                minHeight: '100vh'
+              }}>
+              <SignIn appearance={{ elements: { formButtonPrimary: "w-full" } }} />
+            </CardContent>
           </SignedOut>
         </div>
+        </div >
+      );
+}
+
+return (
+  <div className="min-h-screen bg-background p-6">
+    <div className="max-w-6xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl">Qrid</h1>
+        <p className="text-muted-foreground">
+          Upload an Excel file and convert each row into a QR code
+        </p>
       </div>
-    );
-  }
 
-  return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl">Qrid</h1>
-          <p className="text-muted-foreground">
-            Upload an Excel file and convert each row into a QR code
-          </p>
-        </div>
+      {/* Controls */}
+      <Card>
+        {/* <CardHeader>
+              <CardTitle></CardTitle>
+            </CardHeader> */}
+        <div></div>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <FileUpload
+              onFileUpload={processExcelFile}
+              hasData={qrCodes.length > 0}
+            />
+            <ExportButtons
+              qrCodes={qrCodes}
+              disabled={isProcessing}
+            />
+          </div>
 
-        {/* Controls */}
-        <Card>
-          {/* <CardHeader>
-            <CardTitle></CardTitle>
-          </CardHeader> */}
-          <div></div>
-          <CardContent className="space-y-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <FileUpload
-                onFileUpload={processExcelFile}
-                hasData={qrCodes.length > 0}
-              />
-              <ExportButtons
-                qrCodes={qrCodes}
-                disabled={isProcessing}
-              />
+          {fileName && (
+            <div className="text-sm text-muted-foreground">
+              Current file: <span className="font-medium">{fileName}</span>
+              {qrCodes.length > 0 && (
+                <span className="ml-2">
+                  ({qrCodes.length} QR code{qrCodes.length !== 1 ? 's' : ''} generated)
+                </span>
+              )}
             </div>
+          )}
+        </CardContent>
+      </Card>
+      {/* Manual QR Input */}
+      <ManualQRInput onGenerate={handleManualGenerate} />
+      {/* Info */}
+      <Alert>
+        <Info className="h-4 w-4" />
+        <AlertDescription>
+          Upload an Excel file (.xlsx or .xls) to generate QR codes from each row.
+        </AlertDescription>
+      </Alert>
 
-            {fileName && (
-              <div className="text-sm text-muted-foreground">
-                Current file: <span className="font-medium">{fileName}</span>
-                {qrCodes.length > 0 && (
-                  <span className="ml-2">
-                    ({qrCodes.length} QR code{qrCodes.length !== 1 ? 's' : ''} generated)
-                  </span>
-                )}
+      {/* QR Code Grid */}
+      <Card>
+        <CardHeader>
+          <CardTitle>QR Codes ({qrCodes.length})</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {isProcessing ? (
+            <div className="flex items-center justify-center h-96">
+              <div className="text-center space-y-2">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                <p className="text-muted-foreground">Processing Excel file...</p>
               </div>
-            )}
-          </CardContent>
-        </Card>
-        {/* Manual QR Input */}
-        <ManualQRInput onGenerate={handleManualGenerate} />
-        {/* Info */}
-        <Alert>
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            Upload an Excel file (.xlsx or .xls) to generate QR codes from each row.
-          </AlertDescription>
-        </Alert>
+            </div>
+          ) : (
+            <QRCodeGrid qrCodes={qrCodes} />
+          )}
+        </CardContent>
+      </Card>
 
-        {/* QR Code Grid */}
-        <Card>
-          <CardHeader>
-            <CardTitle>QR Codes ({qrCodes.length})</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {isProcessing ? (
-              <div className="flex items-center justify-center h-96">
-                <div className="text-center space-y-2">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                  <p className="text-muted-foreground">Processing Excel file...</p>
-                </div>
-              </div>
-            ) : (
-              <QRCodeGrid qrCodes={qrCodes} />
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Footer */}
-        <div className="text-center text-sm text-muted-foreground">
-          <p>Each QR code stores the data from its Excel row.</p>
-        </div>
+      {/* Footer */}
+      <div className="text-center text-sm text-muted-foreground">
+        <p>Each QR code stores the data from its Excel row.</p>
       </div>
     </div>
-  );
+  </div>
+);
+  };
+
+return (
+  <Routes>
+    <Route path="/sign-up/*" element={<SignUpPage />} />
+    <Route path="/sign-in/*" element={<SignInPage />} />
+    <Route path="/*" element={<HomeView />} />
+  </Routes>
+);
 }
