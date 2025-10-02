@@ -54,16 +54,26 @@ export default function App() {
 
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const workbook = XLSX.read(arrayBuffer);
+      const workbook = XLSX.read(arrayBuffer, { cellDates: true });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet);
+      const rows = XLSX.utils.sheet_to_json(sheet, {
+        raw: false,
+        defval: '',
+        dateNF: 'yyyy-mm-dd'
+      });
 
 
       const baseUrl = "https://qrid.vercel.app/";
       const generatedUrls = (rows as Record<string, any>[]).map(row => {
         // Build "key=value; key=value" string for each row
         const rowStr = Object.entries(row)
-          .map(([key, value]) => `${key}=${value}`)
+          .map(([key, value]) => {
+            // Normalize dates and other types to strings
+            const v = value instanceof Date
+              ? new Date(value.getTime() - value.getTimezoneOffset() * 60000).toISOString().split('T')[0]
+              : String(value);
+            return `${key}=${v}`;
+          })
           .join("; ");
         return baseUrl + rowStr;
       });
