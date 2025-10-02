@@ -59,6 +59,6 @@
       },
       "scripts": {
             "dev": "vite --host",
-            "build": "vite build --host"
+            "build": "vite build"
       }
 }
