@@ -124,14 +124,9 @@ export default function App() {
             </Card>
           </SignedIn>
           <SignedOut>
-            <Card>
-              <CardHeader className='flex justify-center'>
-                <CardTitle>Sign in to view details</CardTitle>
-              </CardHeader>
               <CardContent className='flex justify-center'>
                 <SignIn appearance={{ elements: { formButtonPrimary: "w-full" } }} />
               </CardContent>
-            </Card>
           </SignedOut>
         </div>
       </div>
