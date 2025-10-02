@@ -5,15 +5,17 @@ import { QRCodeGrid } from './components/QRCodeGrid';
 import { ExportButtons } from './components/ExportButtons';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { Alert, AlertDescription } from './components/ui/alert';
+import { Button } from './components/ui/button';
 import { Info } from 'lucide-react';
 import { ManualQRInput } from './components/ManualQRInput';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './components/ui/table';
-import { SignedIn, SignedOut, SignIn } from '@clerk/clerk-react'
+import { SignedIn, SignedOut, SignIn, SignOutButton } from '@clerk/clerk-react'
 import { useLocation, Routes, Route } from 'react-router-dom';
 import SignUpPage from './pages/SignUp';
 import SignInPage from './pages/SignIn';
 
 
+// Describes a single QR code record rendered in the grid
 interface QRCodeItem {
   id: string;
   data: string;
@@ -21,10 +23,13 @@ interface QRCodeItem {
 }
 
 export default function App() {
+  // Application state
   const [qrCodes, setQrCodes] = useState<QRCodeItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [fileName, setFileName] = useState<string>('');
   const location = useLocation();
+  
+  // Parse key=value pairs from the URL path (used for viewer mode)
   const pathPairs = useMemo(() => {
     const raw = location.pathname.slice(1);
     if (!raw) return [] as { column: string; value: string }[];
@@ -42,6 +47,7 @@ export default function App() {
       .filter(p => p.column);
   }, [location.pathname]);
 
+  // Handle spreadsheet upload → generate QR list
   const processExcelFile = async (file: File) => {
     setIsProcessing(true);
     setFileName(file.name);
@@ -55,10 +61,10 @@ export default function App() {
 
       const baseUrl = "https://qrid.vercel.app/";
       const generatedUrls = (rows as Record<string, any>[]).map(row => {
+        // Build "key=value; key=value" string for each row
         const rowStr = Object.entries(row)
           .map(([key, value]) => `${key}=${value}`)
           .join("; ");
-        // .join("; ") + ";";
         return baseUrl + rowStr;
       });
 
@@ -78,6 +84,7 @@ export default function App() {
     }
   };
 
+  // Handle manual form input → prepend newest QR to grid
   const handleManualGenerate = (data: Record<string, string>) => {
     // Build URL with base + semicolon-delimited key=value pairs
     const baseUrl = "https://qrid.vercel.app/";
@@ -96,12 +103,21 @@ export default function App() {
     setFileName('Manual Entry');
   };
 
+  // Main routed view for "/": shows either the viewer (if path has key=value)
+  // or the primary app interface (upload, manual entry, grid)
   const HomeView = () => {
-    // If URL contains data after '/', render the viewer table
+    // Viewer mode when the URL contains key=value pairs
     if (pathPairs.length > 0) {
       return (
         <div className="min-h-screen bg-background p-6">
           <div className="max-w-6xl mx-auto space-y-6">
+          <SignedIn>
+            <div className="flex justify-end">
+              <SignOutButton redirectUrl="/">
+                <Button variant="outline" size="sm">Log out</Button>
+              </SignOutButton>
+            </div>
+          </SignedIn>
             <SignedIn>
               <Card>
                 <CardHeader>
@@ -145,6 +161,14 @@ export default function App() {
 return (
   <div className="min-h-screen bg-background p-6">
     <div className="max-w-6xl mx-auto space-y-6">
+        {/* Signed-in header actions */}
+        <SignedIn>
+          <div className="flex justify-end">
+            <SignOutButton redirectUrl="/">
+              <Button variant="outline" size="sm">Log out</Button>
+            </SignOutButton>
+          </div>
+        </SignedIn>
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-3xl">Qrid</h1>
@@ -221,6 +245,7 @@ return (
 );
   };
 
+// Application routes
 return (
   <Routes>
     <Route path="/sign-up/*" element={<SignUpPage />} />

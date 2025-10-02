@@ -80,6 +80,14 @@ export function ExportButtons({ qrCodes, disabled = false }: ExportButtonsProps)
         // Add QR code
         pdf.addImage(dataUrl, 'PNG', marginX, currentY, qrSize, qrSize);
         
+        // Add label below QR code - use first column value as primary identifier
+        const firstEntry = Object.entries(qrCode.rowData)[0];
+        if (firstEntry) {
+          const [columnName, columnValue] = firstEntry;
+          pdf.setFontSize(10);
+          pdf.text(`${columnName}: ${columnValue}`, marginX, currentY + qrSize + 8);
+        }
+        
         // Add row details next to QR code
         const detailsX = marginX + qrSize + 10;
         const detailsY = currentY - 10;

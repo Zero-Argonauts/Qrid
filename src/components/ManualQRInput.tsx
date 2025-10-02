@@ -86,16 +86,22 @@ export function ManualQRInput({ onGenerate }: ManualQRInputProps) {
                                     onChange={(e) => updatePair(pair.id, 'value', e.target.value)}
                                 />
                             </div>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                onClick={() => removePair(pair.id)}
-                                disabled={pairs.length === 1}
-                                className="shrink-0"
-                            >
-                                <Trash2 size={16} />
-                            </Button>
+                            <div className="mt-1">
+
+                            <div className="mt-2">
+
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => removePair(pair.id)}
+                                    disabled={pairs.length === 1}
+                                    className="shrink-0 mt-2"
+                                >
+                                    <Trash2 size={16} />
+                                </Button>
+                            </div>
+                            </div>
                         </div>
                     ))}
                 </div>

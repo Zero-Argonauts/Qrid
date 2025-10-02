@@ -54,7 +54,7 @@ export function QRCodeGrid({ qrCodes }: QRCodeGridProps) {
   // }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-8">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-8">
       {qrCodes.map((qrCode, index) => (
         <Card key={qrCode.id} className="aspect-square flex flex-col items-center justify-center p-4">
           {qrCode.data ? (
