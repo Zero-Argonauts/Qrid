@@ -14,7 +14,6 @@ import { useLocation, Routes, Route } from 'react-router-dom';
 import SignUpPage from './pages/SignUp';
 import SignInPage from './pages/SignIn';
 
-
 // Describes a single QR code record rendered in the grid
 interface QRCodeItem {
   id: string;
@@ -28,7 +27,7 @@ export default function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [fileName, setFileName] = useState<string>('');
   const location = useLocation();
-  
+
   // Parse key=value pairs from the URL path (used for viewer mode)
   const pathPairs = useMemo(() => {
     const raw = location.pathname.slice(1);
@@ -113,44 +112,32 @@ export default function App() {
     setFileName('Manual Entry');
   };
 
-  // Main routed view for "/": shows either the viewer (if path has key=value)
-  // or the primary app interface (upload, manual entry, grid)
   const HomeView = () => {
-    // Viewer mode when the URL contains key=value pairs
     if (pathPairs.length > 0) {
       return (
         <div className="min-h-screen bg-background p-6">
           <div className="max-w-6xl mx-auto space-y-6">
-          <SignedIn>
-            <div className="flex justify-end">
-              <SignOutButton redirectUrl="/">
-                <Button variant="outline" size="sm">Log out</Button>
-              </SignOutButton>
-            </div>
-          </SignedIn>
             <SignedIn>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Asset Details</CardTitle>
-                </CardHeader>
-                <CardContent>
+              <div className="flex justify-end">
+                <SignOutButton redirectUrl="/">
+                  <Button variant="outline" size="sm">Log out</Button>
+                </SignOutButton>
+              </div>
+            </SignedIn>
+            <SignedIn>
+              <Card className='p-5'>
+                
                   <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[40%]">Field</TableHead>
-                        <TableHead>Value</TableHead>
-                      </TableRow>
-                    </TableHeader>
                     <TableBody>
                       {pathPairs.map((p, i) => (
-                        <TableRow key={`${p.column}-${i}`}>
+                        <TableRow key={`${p.column}-${i}`} className='flex flex-col'>
                           <TableCell className="font-medium">{p.column}</TableCell>
                           <TableCell>{p.value}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
                   </Table>
-                </CardContent>
+                
               </Card>
             </SignedIn>
             <SignedOut>
@@ -160,107 +147,105 @@ export default function App() {
                 alignItems: 'center',
                 minHeight: '100vh'
               }}>
-              <SignIn appearance={{ elements: { formButtonPrimary: "w-full" } }} />
-            </CardContent>
-          </SignedOut>
-        </div>
+                <SignIn appearance={{ elements: { formButtonPrimary: "w-full" } }} />
+              </CardContent>
+            </SignedOut>
+          </div>
         </div >
       );
-}
+    }
 
-return (
-  <div className="min-h-screen bg-background p-6">
-    <div className="max-w-6xl mx-auto space-y-6">
-        {/* Signed-in header actions */}
-        <SignedIn>
-          <div className="flex justify-end">
-            <SignOutButton redirectUrl="/">
-              <Button variant="outline" size="sm">Log out</Button>
-            </SignOutButton>
-          </div>
-        </SignedIn>
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl">Qrid</h1>
-        <p className="text-muted-foreground">
-          Upload an Excel file and convert each row into a QR code
-        </p>
-      </div>
-
-      {/* Controls */}
-      <Card>
-        {/* <CardHeader>
-              <CardTitle></CardTitle>
-            </CardHeader> */}
-        <div></div>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <FileUpload
-              onFileUpload={processExcelFile}
-              hasData={qrCodes.length > 0}
-            />
-            <ExportButtons
-              qrCodes={qrCodes}
-              disabled={isProcessing}
-            />
-          </div>
-
-          {fileName && (
-            <div className="text-sm text-muted-foreground">
-              Current file: <span className="font-medium">{fileName}</span>
-              {qrCodes.length > 0 && (
-                <span className="ml-2">
-                  ({qrCodes.length} QR code{qrCodes.length !== 1 ? 's' : ''} generated)
-                </span>
-              )}
+    return (
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Signed-in header actions */}
+          <SignedIn>
+            <div className="flex justify-end">
+              <SignOutButton redirectUrl="/">
+                <Button variant="outline" size="sm">Log out</Button>
+              </SignOutButton>
             </div>
-          )}
-        </CardContent>
-      </Card>
-      {/* Manual QR Input */}
-      <ManualQRInput onGenerate={handleManualGenerate} />
-      {/* Info */}
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertDescription>
-          Upload an Excel file (.xlsx or .xls) to generate QR codes from each row.
-        </AlertDescription>
-      </Alert>
+          </SignedIn>
+          {/* Header */}
+          <div className="space-y-2 flex flex-col items-center">
+            <div className='flex justify-between w-full'>
+              <img src="/university-logo.svg" alt="" className='xs:w-35 sm:w-60' />
+              <img src="Trust.svg" alt="" className='xs:w-15 sm:w-20' />
+            </div>
+            {/* <p className="text-muted-foreground">
+              Upload an Excel file and convert each row into a QR code
+            </p> */}
+          </div>
 
-      {/* QR Code Grid */}
-      <Card>
-        <CardHeader>
-          <CardTitle>QR Codes ({qrCodes.length})</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {isProcessing ? (
-            <div className="flex items-center justify-center h-96">
-              <div className="text-center space-y-2">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                <p className="text-muted-foreground">Processing Excel file...</p>
+          <Card>
+            <CardContent className="space-y-4 mt-6">
+              <div className="flex sm:flex-row xs:flex-col items-start sm:items-center justify-between gap-4">
+                <FileUpload
+                  onFileUpload={processExcelFile}
+                  hasData={qrCodes.length > 0}
+                />
+                <ExportButtons
+                  qrCodes={qrCodes}
+                  disabled={isProcessing}
+                />
               </div>
-            </div>
-          ) : (
-            <QRCodeGrid qrCodes={qrCodes} />
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Footer */}
-      <div className="text-center text-sm text-muted-foreground">
-        <p>Each QR code stores the data from its Excel row.</p>
+              {fileName && (
+                <div className="text-sm text-muted-foreground">
+                  Current file: <span className="font-medium">{fileName}</span>
+                  {qrCodes.length > 0 && (
+                    <span className="ml-2">
+                      ({qrCodes.length} QR code{qrCodes.length !== 1 ? 's' : ''} generated)
+                    </span>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          {/* Manual QR Input */}
+          <ManualQRInput onGenerate={handleManualGenerate} />
+          {/* Info */}
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              Upload an Excel file (.xlsx or .xls) to generate QR codes from each row.
+            </AlertDescription>
+          </Alert>
+
+          {/* QR Code Grid */}
+          <Card>
+            <CardHeader>
+              <CardTitle>QR Codes ({qrCodes.length})</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {isProcessing ? (
+                <div className="flex items-center justify-center h-96">
+                  <div className="text-center space-y-2">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                    <p className="text-muted-foreground">Processing Excel file...</p>
+                  </div>
+                </div>
+              ) : (
+                <QRCodeGrid qrCodes={qrCodes} />
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Footer */}
+          <div className="text-center text-sm text-muted-foreground">
+            <p>Each QR code stores the data from its Excel row.</p>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-);
+    );
   };
 
-// Application routes
-return (
-  <Routes>
-    <Route path="/sign-up/*" element={<SignUpPage />} />
-    <Route path="/sign-in/*" element={<SignInPage />} />
-    <Route path="/*" element={<HomeView />} />
-  </Routes>
-);
+  // Application routes
+  return (
+    <Routes>
+      <Route path="/sign-up/*" element={<SignUpPage />} />
+      <Route path="/sign-in/*" element={<SignInPage />} />
+      <Route path="/*" element={<HomeView />} />
+    </Routes>
+  );
 }

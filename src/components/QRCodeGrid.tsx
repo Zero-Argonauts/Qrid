@@ -33,47 +33,43 @@ export function QRCodeGrid({ qrCodes }: QRCodeGridProps) {
 
   if (qrCodes.length === 0) {
     return (
-      <div className="grid grid-cols-3 gap-4 p-8">
+      <div className="grid xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-8">
         {Array.from({ length: 9 }, (_, i) => (
-          <Card key={i} className="aspect-square flex items-center justify-center bg-muted/50">
-            <div className="text-muted-foreground">No QR Code</div>
+          <Card key={i} className="h-60 aspect-ratio flex items-center justify-center bg-muted/50 p-4">
+            <div className="bg-muted/30 rounded flex items-center justify-center">
+              <span className="text-muted-foreground">No QR Code</span>
+            </div>
           </Card>
         ))}
       </div>
     );
   }
 
-  // Fill empty slots with placeholder cards
-  // const displayItems = [...qrCodes];
-  // while (displayItems.length < 9) {
-  //   displayItems.push({
-  //     id: `empty-${displayItems.length}`,
-  //     data: '',
-  //     rowData: {}
-  //   });
-  // }
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-8">
+    <div className="grid xs:grid-cols-1 sb:grid-cols-2 md:grid-cols-3 gap-4 p-10">
       {qrCodes.map((qrCode, index) => (
-        <Card key={qrCode.id} className="aspect-square flex flex-col items-center justify-center p-4">
+        <Card key={qrCode.id} className="aspect-ratio flex flex-col items-center justify-center p-4">
           {qrCode.data ? (
             <>
               <canvas
                 ref={el => canvasRefs.current[index] = el}
-                className="max-w-full max-h-full"
+                width={200}
+                height={200}
+                className="w-[200px] h-[200px] shrink-0"
               />
               <div className="mt-2 text-center">
                 <div className="text-xs text-muted-foreground">
                   Row {index + 1}
                 </div>
-                <div className="text-xs text-muted-foreground mt-1 max-w-full truncate">
+                <div className="text-xs text-muted-foreground mt-1 truncate">
                   {Object.keys(qrCode.rowData).length} fields
                 </div>
               </div>
             </>
           ) : (
-            <div className="text-muted-foreground">No QR Code</div>
+            <div className="w-full aspect-square max-w-[220px] sm:max-w-[240px] md:max-w-[260px] min-w-[160px] bg-muted/30 rounded flex items-center justify-center text-muted-foreground">
+              No QR Code
+            </div>
           )}
         </Card>
       ))}

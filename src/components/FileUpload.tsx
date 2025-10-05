@@ -24,7 +24,7 @@ export function FileUpload({ onFileUpload, hasData }: FileUploadProps) {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 sm:h-48 sm:w-48 md:h-auto md:w-auto xs:w-full">
       <input
         ref={fileInputRef}
         type="file"
@@ -35,7 +35,7 @@ export function FileUpload({ onFileUpload, hasData }: FileUploadProps) {
       <Button
         onClick={handleButtonClick}
         variant={hasData ? "secondary" : "default"}
-        className="flex items-center"
+        className="flex items-center sm:h-48 sm:w-full md:h-auto md:w-auto xs:w-full cursor-pointer"
       >
         <FileSpreadsheet size={16} />
         Upload XLSX

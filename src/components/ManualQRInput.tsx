@@ -61,14 +61,14 @@ export function ManualQRInput({ onGenerate }: ManualQRInputProps) {
 
     return (
         <Card>
-            <CardHeader>
+            {/* <CardHeader>
                 <CardTitle>Manual QR Code Creation</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+            </CardHeader> */}
+            <CardContent className="space-y-4 mt-6">
                 <div className="space-y-2">
                     {pairs.map((pair, index) => (
-                        <div key={pair.id} className="flex gap-3 items-center">
-                            <div className="flex-1 space-y-2 w-full">
+                        <div key={pair.id} className="flex xs:flex-col sm:flex-row gap-4 items-end">
+                            <div className="space-y-2 w-full mt-2">
                                 <Label htmlFor={`column-${pair.id}`}>Column Name</Label>
                                 <Input
                                     id={`column-${pair.id}`}
@@ -86,32 +86,28 @@ export function ManualQRInput({ onGenerate }: ManualQRInputProps) {
                                     onChange={(e) => updatePair(pair.id, 'value', e.target.value)}
                                 />
                             </div>
-                            <div className="mt-1">
 
-                            <div className="mt-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={() => removePair(pair.id)}
+                                disabled={pairs.length === 1}
+                                className="shrink-0 cursor-pointer"
+                            >
+                                <Trash2 size={16} />
+                            </Button>
 
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={() => removePair(pair.id)}
-                                    disabled={pairs.length === 1}
-                                    className="shrink-0 mt-2"
-                                >
-                                    <Trash2 size={16} />
-                                </Button>
-                            </div>
-                            </div>
                         </div>
                     ))}
                 </div>
 
-                <div className="flex items-center justify-between pt-2">
+                <div className="flex items-center justify-between pt-2 sm:flex-row xs:flex-col">
                     <Button
                         type="button"
                         variant="outline"
                         onClick={addPair}
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 sm:w-auto xs:w-full cursor-pointer"
                     >
                         <Plus size={16} />
                         Add Column
@@ -119,7 +115,7 @@ export function ManualQRInput({ onGenerate }: ManualQRInputProps) {
 
                     <Button
                         onClick={handleGenerate}
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 sm:w-auto xs:w-full mt-4 cursor-pointer"
                     >
                         <QrCode size={16} />
                         Generate QR Code
