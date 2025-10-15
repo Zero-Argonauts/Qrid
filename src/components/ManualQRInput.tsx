@@ -16,9 +16,23 @@ interface ManualQRInputProps {
 }
 
 export function ManualQRInput({ onGenerate }: ManualQRInputProps) {
-    const [pairs, setPairs] = useState<ColumnValuePair[]>([
-        { id: '1', column: '', value: '' }
-    ]);
+    // Predefined columns for manual entry; users can delete or add new ones
+    const defaultColumns = [
+        'No.',
+        'Asset Class / (BLOCK No as per IT)',
+        'Asset Sub Class',
+        'Description',
+        'Asset Tagging',
+        'Date of purchase',
+        'Tax Invoice No./ (File no.)',
+        'Vendors/ Suppliers Name & Address',
+        'Location',
+        'Original Cost'
+    ];
+
+    const [pairs, setPairs] = useState<ColumnValuePair[]>(
+        defaultColumns.map((name, idx) => ({ id: (idx + 1).toString(), column: name, value: '' }))
+    );
 
     const addPair = () => {
         const newPair: ColumnValuePair = {
